@@ -1,12 +1,11 @@
 import sys
 import re
-import itertools
 
 def read_files(filepath):
     try:
         with open(filepath, 'r') as file:
             code = file.read()
-        print(f"File {filepath} opened!")
+        print(f"\nInput from {filepath}:\n\n{code}")
         return code
     except FileNotFoundError:
         print(f"File {filepath} not found!")
@@ -18,15 +17,19 @@ token_definitions = [
         ('FLOAT', r'float'),
         ('CHAR', r'char'),
         ('STRING', r'string'),
-        ('ARR', r'type\[\d+\]'),
+        # ('ARR', r'((int)|(float)|(char)|(string)) [a-zA-Z_]\w*(\[\d+\])+'),
+        ('ARR', r'(\[\d+\])+'),
         ('PRINT', r'print'),
         ('READ', r'read'),
+        ('TRUE', r'true'),
+        ('FALSE', r'false'),
         ('ID', r'[a-zA-Z_]\w*'),
         ('NUMBER', r'\d+'),
         ('ASSIGN', r'='),
         ('SEMICOLON', r';'),
         ('LPAREN', r'\('),
         ('RPAREN', r'\)'),
+        ('BOOLOP', r'[&]{2}|[|]{2}|!'),
         ('OPERATOR', r'[+\-*/<>=!&|]'),
     ]
 
@@ -62,6 +65,9 @@ def parse_code(tokens):
     for token in tokens:
         # Declarations
         print(f"TOKEN = {token}\n")
+        # if token[0] == 'ARR':
+        #     parse_arrays(tokens)
+
         if token[0] in data_types: 
             parse_datatypes(tokens, token)
 
@@ -83,42 +89,58 @@ def parse_code(tokens):
 
 # Parsing datatypes - int, bool, float, char, string
 def parse_datatypes(tokens, curr_token):
-    # curr_token has the data type of the identifier 
-    # data_type = curr_token
-    # identifier = next(tokens)
     data_type = next(tokens)
-    identifier = next(tokens)
+    next_token = next(tokens)
 
-    # Array with type[number]
-    if data_type[0] == 'ARR':
-        # number = int(data_type[1].split('[')[1][:-1])
-        next_token = next(tokens)
-        if next_token[0] != 'ID':
-            raise SyntaxError(f"ARR: Expected an identifier, got {next_token[0]}: {next_token[1]}")
-        data_type = symbol_table.get(next_token[1])
-    elif data_type[0] == 'ID':
-        # number = 0
+    # Identifiers
+    if data_type[0] == 'ID':
+        print(f"TOKEN = {data_type}")
         symbol_table[data_type[1]] = curr_token
-        print(f"declared {data_type[1]} for {data_type[0]}")
         data_type = symbol_table.get(data_type[1])
+        # One and multi-dimensional arrays 
+        if next_token[0] != 'SEMICOLON' and next_token[0] == 'ARR':
+            numbers = [int(num) for num in next_token[1].strip('[]').split('][')]
+        data_type = symbol_table.get(next_token[1])
+        next_token = next(tokens)
     else:
         raise SyntaxError(f"Invalid data type: {data_type[1]}")
 
+    # Array with type[number]
+    # if curr_token[0] != 'BOOL' and data_type[0] == 'ARR':
+    #     print(f"TOKEN = {data_type}")
+    #     number = int(data_type[1].split('[')[1][:-1])
+    #     next_token = next(tokens)
+    #     if next_token[0] != 'ID':
+    #         raise SyntaxError(f"ARR: Expected an identifier, got {next_token[0]}: {next_token[1]}")
+    #     data_type = symbol_table.get(next_token[1])
+    # elif data_type[0] == 'ID':
+    #     # number = 0
+    #     symbol_table[data_type[1]] = curr_token
+    #     print(f"declared {data_type[1]} for {data_type[0]}")
+    #     data_type = symbol_table.get(data_type[1])
+    # else:
+    #     raise SyntaxError(f"Invalid data type: {data_type[1]}")
+
     # if identifier[0] != 'ID':
     #     raise SyntaxError(f"ID: Expected an identifier, got {identifier[0]}: {identifier[1]}")
-    symbol_table[identifier[1]] = data_type
 
-    if identifier[0] == 'ASSIGN':
+    symbol_table[next_token[1]] = data_type
+
+    if next_token[0] == 'ASSIGN':
         raise SyntaxError("Declaration and assignment at the same time.")
 
-    if identifier[0] != 'SEMICOLON':
+    if next_token[0] != 'SEMICOLON':
+        print(f"TOKEN = {next_token}")
         raise SyntaxError(f"Declarations need to end with semicolons (;)")
 
-    symbol_table[identifier[1]] = data_type
+    symbol_table[next_token[1]] = data_type
 
-    # next_token = next(peek)
-    # if next_token is not None and next_token[0] == 'ASSIGN':
-    #     raise SyntaxError(f"Declaration and assignment at the same time.")
+# def parse_arrays(tokens):
+#     identifier = next(tokens)
+#     number = int(identifier[1].split('[')[1][:-1])
+#     next_token = next(tokens)
+#     return
+#
 
 # Parsing all assignments (eg. a = (expression);)
 def parse_assignment(tokens, curr_token):
@@ -142,15 +164,36 @@ def parse_expression(tokens, declared_type):
     assigned_type = symbol_table.get(next_token[1])
 
     # Implementing type checking
-    if next_token[0] != 'NUMBER' and declared_type != assigned_type:
+    if (next_token[0] != 'NUMBER' and next_token[0] != 'TRUE' and next_token[0] != 'FALSE') and declared_type != assigned_type:
+        print(f"Token = {next_token}")
         raise SyntaxError(f"Inconsistent type assignments of {declared_type} and {assigned_type}")
 
-    # If expression uses an operator and operands
-    if next_token[0] == 'NUMBER':
-        # First operand
-        # op1 = next_token
-        # print(f"TOKEN = {op1}")
+    # Boolean expression
+    if next_token[0] == 'TRUE' or next_token[0] == 'FALSE':
+        print(f"Token here = {next_token}")
         operator = next(tokens)
+        print(f"Operator = {operator}")
+        if operator[0] != 'BOOLOP' and operator[0] != 'SEMICOLON':
+            print(f"Operator = {operator}")
+            raise SyntaxError("No valid operator in boolean expression.")
+        op2 = next(tokens)
+        print(f"OP2 = {op2}")
+        if op2[0] != 'TRUE' and op2[0] != 'FALSE':
+            raise SyntaxError(f"Inconsistent operations of types {next_token} and {op2}")
+    
+    # Type-checking assignment of two variables
+    elif next_token[0] == 'ID':
+        print(f"Token here = {next_token}")
+        if declared_type != assigned_type:
+            raise SyntaxError(f"Inconsistent type assignments of {declared_type} and {assigned_type}")
+
+
+    # If expression uses an operator and operands
+    elif next_token[0] == 'NUMBER':
+        print(f"Token here = {next_token}")
+        operator = next(tokens)
+        if operator[0] == 'SEMICOLON':
+            return
         if operator[0] != 'OPERATOR':
             raise SyntaxError(f"Invalid operator {operator[1]}")
         op2 = next(tokens)
@@ -159,6 +202,7 @@ def parse_expression(tokens, declared_type):
 
     next_token = next(tokens)
     if next_token[0] != 'SEMICOLON':
+        print(f"TOKEN at semicolon = {next_token}")
         raise SyntaxError(f"Statements need to end with semicolons (;)")
 
 
@@ -207,19 +251,18 @@ def parse_read(tokens):
 
     next_token = next(tokens)
     if next_token[0] != 'RPAREN':
+        print(f"RPAREN = {next_token}")
         raise SyntaxError(f"Expected ')' to end read statement")
         
+    next_token = next(tokens)
     if next_token[0] != 'SEMICOLON':
+        print(f"TOKEN = {next_token}")
         raise SyntaxError(f"Statements need to end with semicolons (;)")
 
 def main(filepath):
     code = read_files(filepath)
-    print("INPUT: \n")
-    print(code)
     tokens = tokenize(code)
     parse(tokens)
-    # print("after tokenize?")
-    # print("Printing main")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
