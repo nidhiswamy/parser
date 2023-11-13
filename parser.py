@@ -57,8 +57,6 @@ def parse(tokens):
         print("Valid input")
     except Exception as e:
         print("Invalid input: ", e)
-        # import traceback
-        # traceback.print_exc()
 
 def parse_code(tokens):
     data_types = ['INT', 'BOOL', 'FLOAT', 'CHAR', 'STRING']
@@ -82,7 +80,7 @@ def parse_code(tokens):
         elif token[0] == 'READ':
             parse_read(tokens)
 
-        # If a statement does not start with the above, raise error
+        # Else, raise an error with an unexpected start token
         else:
             raise SyntaxError(f"Unexpected start token: {token[0]}")
 
@@ -132,6 +130,7 @@ def parse_assignment(tokens, curr_token):
 # Parsing all expressions (eg. a = 4 * 5;)
 def parse_expression(tokens, curr_token):
     next_token = next(tokens)
+    # Obtaining current and next tokens type
     assigned_type = symbol_table.get(next_token[1])
     declared_type = symbol_table.get(curr_token[1])
 
@@ -217,7 +216,7 @@ def parse_expression(tokens, curr_token):
         if op2[0] != 'NUMBER':
             raise SyntaxError(f"Invalid second operand {op2[0]}")
 
-    # Char expressions
+    # Character expressions
     elif next_token[0] == 'CHAR':
         operator = next(tokens)
         if operator[0] == 'SEMICOLON':
@@ -241,7 +240,7 @@ def parse_print(tokens):
     if next_token[0] != 'LPAREN':
         raise SyntaxError(f"Expected '(' after keyword 'print'")
     
-    # Identifierand string literal printing
+    # Identifier and string literal printing
     identifier = next(tokens)
     if identifier[0] != 'ID' and identifier[0] != 'STRINGS':
         raise SyntaxError(f"Expected an identifier")
@@ -252,7 +251,6 @@ def parse_print(tokens):
         
     next_token = next(tokens)
     if next_token[0] != 'SEMICOLON':
-        print(f"token = {next_token}")
         raise SyntaxError(f"Statements need to end with semicolons (;)")
 
 # Parsing the read statement
@@ -271,12 +269,10 @@ def parse_read(tokens):
 
     next_token = next(tokens)
     if next_token[0] != 'RPAREN':
-        print(f"RPAREN = {next_token}")
         raise SyntaxError(f"Expected ')' to end read statement")
         
     next_token = next(tokens)
     if next_token[0] != 'SEMICOLON':
-        print(f"TOKEN = {next_token}")
         raise SyntaxError(f"Statements need to end with semicolons (;)")
 
 def main(filepath):
