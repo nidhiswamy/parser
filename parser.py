@@ -1,6 +1,5 @@
 import sys
 import re
-import numpy as np
 
 def read_files(filepath):
     try:
@@ -39,17 +38,11 @@ token_definitions = [
         ('OPERATOR', r'[+\-*/<>=!&|]'),
     ]
 
-# Whitespaces
-# ignore = r'[ \n]+|*'
-
 # Combined regular expression
 pattern = re.compile('|'.join(f'(?P<{name}>{regex})' for name, regex in token_definitions))
-# + [('IGNORE', ignore)]))
 
 def tokenize(code):
     for match in re.finditer(pattern, code):
-        # if match.lastgroup == 'IGNORE':
-        #     continue
         if match.lastgroup is not None:
             value = match.group(match.lastgroup)
             yield (match.lastgroup, value)
@@ -125,7 +118,6 @@ def parse_datatypes(tokens, curr_token):
 
 # Parsing all assignments (eg. a = (expression);)
 def parse_assignment(tokens, curr_token):
-    identifier = curr_token
     next_token = next(tokens)
 
     declared_type = symbol_table.get(curr_token[1])
@@ -211,13 +203,11 @@ def parse_expression(tokens, curr_token):
 
     # Type-checking assignment of two variables
     elif next_token[0] == 'ID':
-        # print(f"Token here = {next_token}")
         if declared_type != assigned_type:
             raise SyntaxError(f"Inconsistent type assignment of {declared_type} and {assigned_type}")
 
     # If expression uses an operator and operands
     elif next_token[0] == 'NUMBER':
-        # print(f"Token here = {next_token}")
         operator = next(tokens)
         if operator[0] == 'SEMICOLON':
             return
@@ -229,7 +219,6 @@ def parse_expression(tokens, curr_token):
 
     # Char expressions
     elif next_token[0] == 'CHAR':
-        # print(f"Token here = {next_token}")
         operator = next(tokens)
         if operator[0] == 'SEMICOLON':
             return
@@ -243,7 +232,6 @@ def parse_expression(tokens, curr_token):
     if next_token is not None and next_token[0] != 'SEMICOLON':
         next_token = next(tokens)
     if next_token[0] != 'SEMICOLON':
-        print(f"TOKEN at semicolon = {next_token}")
         raise SyntaxError(f"Statements need to end with a semicolon (;)")
 
 
@@ -253,19 +241,10 @@ def parse_print(tokens):
     if next_token[0] != 'LPAREN':
         raise SyntaxError(f"Expected '(' after keyword 'print'")
     
-    # Identifier printing
+    # Identifierand string literal printing
     identifier = next(tokens)
-    if identifier[0] != 'ID' and identifier[0] != "\"":
+    if identifier[0] != 'ID' and identifier[0] != 'STRINGS':
         raise SyntaxError(f"Expected an identifier")
-
-    # String literal printing
-    if identifier[0] == "\"":
-        next_token = next(tokens)
-        if next_token[0] != 'STRING':
-            raise SyntaxError("No string inside of print statement")
-        next_token = next(tokens)
-        if next_token[0] != "\"":
-            raise SyntaxError("print(string) does not have closing quotes")
 
     next_token = next(tokens)
     if next_token[0] != 'RPAREN':
@@ -276,7 +255,7 @@ def parse_print(tokens):
         print(f"token = {next_token}")
         raise SyntaxError(f"Statements need to end with semicolons (;)")
 
-# Parsing the read(a); statement
+# Parsing the read statement
 def parse_read(tokens):
     next_token = next(tokens)
     if next_token[0] != 'LPAREN':
@@ -304,7 +283,6 @@ def main(filepath):
     code = read_files(filepath)
     tokens = tokenize(code)
     parse(tokens)
-    # print(f"SYMBOL TABLE = {symbol_table}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
