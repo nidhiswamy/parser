@@ -205,7 +205,6 @@ def parse_expression(tokens, curr_token, index):
     # Character assignments
     elif next_token[0] == 'CHARACTER':
         next_token = next(tokens)
-        print(f"Next token = {next_token}")
 
     # String assignments
     elif next_token[0] == 'STRINGS':
