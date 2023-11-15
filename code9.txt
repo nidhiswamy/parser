@@ -1,0 +1,3 @@
+char _po;
+int pok;
+float _low89;

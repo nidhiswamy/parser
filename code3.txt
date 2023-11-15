@@ -1,2 +1,3 @@
-string name = "John" + "Doe";
+string name;
+name = "John" + "Doe";
 print(name);

@@ -1,12 +1,4 @@
-char a;
-a = 'h';
-char c;
-c = 'd';
-string x;
-x = "Hello" + "World!";
-print(x);
-print(x);
-float w;
-w = 123.45;
-char f;
-read(f);
+int y;
+int a[1];
+int x[3][2];
+x = {{1,2,3}, {3,4}};

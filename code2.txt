@@ -1,2 +1,2 @@
-int x = 5;
-print(x);
+char y;
+y = 'z';
