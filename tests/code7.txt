@@ -1,6 +1,0 @@
-char a;
-a = 'h';
-char c;
-c = 'd';
-char f;
-read(f);
