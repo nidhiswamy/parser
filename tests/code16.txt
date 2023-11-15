@@ -1,0 +1,3 @@
+char a;
+read(a);
+read("hello world!");

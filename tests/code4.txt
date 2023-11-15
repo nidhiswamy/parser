@@ -1,0 +1,4 @@
+bool flag;
+flag = true && false;
+int in;
+read(in);
