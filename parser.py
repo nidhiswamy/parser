@@ -165,23 +165,23 @@ def parse_expression(tokens, curr_token, index):
 
     # Implementing type checking
     if next_token[0] != 'LBRACE' and declared_type != assigned_type:
-        raise SyntaxError(f"Line {index+1}, Inconsistent type assignment of {declared_type} and {assigned_type}")
+        raise SyntaxError(f"Line {index+1}: Inconsistent type assignment of {declared_type} and {assigned_type}")
 
     # Boolean expression
     elif next_token[0] == 'TRUE' or next_token[0] == 'FALSE':
         operator = next(tokens)
         if operator[0] != 'BOOLOP' and operator[0] != 'SEMICOLON':
-            raise SyntaxError(f"Line {index+1}, No valid operator in boolean expression.")
+            raise SyntaxError(f"Line {index+1}: No valid operator in boolean expression.")
         op2 = next(tokens)
         if op2[0] != 'TRUE' and op2[0] != 'FALSE':
-            raise SyntaxError(f"Line {index+1}, Inconsistent operations of types {next_token} and {op2}")
+            raise SyntaxError(f"Line {index+1}: Inconsistent operations of types {next_token} and {op2}")
 
     # Array initialization
     elif next_token[0] == 'LBRACE':
         next_token = next(tokens)
         value = symbol_table.get(curr_token[1])
         if value is None:
-            raise SyntaxError(f"Line {index+1}, No such value initialized")
+            raise SyntaxError(f"Line {index+1}: No such value initialized")
         array_type = value[0]
         if array_type == 'INT':
             array_type = 'NUMBER'
@@ -192,25 +192,25 @@ def parse_expression(tokens, curr_token, index):
         for i in range(array_size):
             # Iterating through the dimensions of the array
             if next_token[0] != 'LBRACE' and next_token[0] != 'NUMBER':
-                raise SyntaxError(f"Line {index+1}, Array initialization out of bounds")
+                raise SyntaxError(f"Line {index+1}: Array initialization out of bounds")
             for j in range(dimension[i]):
                 next_token = next(tokens)
                 if next_token[0] != 'COMMA' and next_token[0] != array_type :
-                    raise SyntaxError(f"Line {index+1}, Inconsistent type assignments for {array_type} array")
+                    raise SyntaxError(f"Line {index+1}: Inconsistent type assignments for {array_type} array")
 
                 # Comma
                 if next_token[0] == 'COMMA':
                     continue
                 next_token = next(tokens) 
                 if j != dimension[i]-1 and next_token[0] != 'COMMA':
-                   raise SyntaxError(f"Line {index+1}, Array dimensions do not match")
+                    raise SyntaxError(f"Line {index+1}: Array dimensions do not match")
             if next_token[0] != 'RBRACE':
-                raise SyntaxError(f"Line {index+1}, Array dimensions do not match")
+                raise SyntaxError(f"Line {index+1}: Array dimensions do not match")
             
             next_token = next(tokens)
             next_token = next(tokens)
             if i != array_size-1 and next_token[0] != 'LBRACE':
-                raise SyntaxError(f"Line {index+1}, Dimension of array = {array_size}")
+                raise SyntaxError(f"Line {index+1}: Dimension of array = {array_size}")
             if next_token[0] != 'SEMICOLON':
                 next_token = next(tokens)
 
@@ -230,7 +230,7 @@ def parse_expression(tokens, curr_token, index):
     # Type-checking assignment of two variables
     elif next_token[0] == 'ID':
         if declared_type != assigned_type:
-            raise SyntaxError(f"Line {index+1}, Inconsistent type assignment of {declared_type} and {assigned_type}")
+            raise SyntaxError(f"Line {index+1}: Inconsistent type assignment of {declared_type} and {assigned_type}")
 
     # If expression uses an operator and operands
     elif next_token[0] == 'NUMBER':
@@ -238,10 +238,10 @@ def parse_expression(tokens, curr_token, index):
         if operator[0] == 'SEMICOLON':
             return
         if operator[0] != 'OPERATOR':
-            raise SyntaxError(f"Line {index+1}, Invalid operator {operator[1]}")
+            raise SyntaxError(f"Line {index+1}: Invalid operator {operator[1]}")
         op2 = next(tokens)
         if op2[0] != 'NUMBER':
-            raise SyntaxError(f"Line {index+1}, Invalid second operand {op2[0]}")
+            raise SyntaxError(f"Line {index+1}: Invalid second operand {op2[0]}")
 
     # Character expressions
     elif next_token[0] == 'CHAR':
@@ -249,64 +249,64 @@ def parse_expression(tokens, curr_token, index):
         if operator[0] == 'SEMICOLON':
             return
         if operator[0] != 'OPERATOR':
-            raise SyntaxError(f"Line {index+1}, Invalid operator {operator[1]}")
+            raise SyntaxError(f"Line {index+1}: Invalid operator {operator[1]}")
         op2 = next(tokens)
         if op2[0] != 'NUMBER':
-            raise SyntaxError(f"Line {index+1}, Invalid second operand {op2[0]}")
+            raise SyntaxError(f"Line {index+1}: Invalid second operand {op2[0]}")
 
     # Statements have to end with a semicolon
     if next_token is not None and next_token[0] != 'SEMICOLON':
         next_token = next(tokens)
 
     if next_token[0] != 'SEMICOLON':
-        raise SyntaxError(f"Line {index+1}, Statements need to end with a semicolon (;)")
+        raise SyntaxError(f"Line {index+1}: Statements need to end with a semicolon (;)")
 
 
 # Parsing the print(a); statement
 def parse_print(tokens, index):
     next_token = next(tokens)
     if next_token[0] != 'LPAREN':
-        raise SyntaxError(f"Line {index+1}, Expected '(' after keyword 'print'")
+        raise SyntaxError(f"Line {index+1}: Expected '(' after keyword 'print'")
     
     # Identifier and string literal printing
     identifier = next(tokens)
     if identifier[0] != 'STRINGS':
         if identifier[0] != 'ID':
-            raise SyntaxError(f"Line {index+1}, Expected an identifier or string literal")
+            raise SyntaxError(f"Line {index+1}: Expected an identifier or string literal")
         if symbol_table.get(identifier[1]) is None:
-            raise SyntaxError(f"Line {index+1}, Variable '{identifier[1]}' is not declared")
+            raise SyntaxError(f"Line {index+1}: Variable '{identifier[1]}' is not declared")
 
     next_token = next(tokens)
     if next_token[0] != 'RPAREN':
-        raise SyntaxError(f"Line {index+1}, Expected ')' to end print statement")
+        raise SyntaxError(f"Line {index+1}: Expected ')' to end print statement")
         
     next_token = next(tokens)
     if next_token[0] != 'SEMICOLON':
-        raise SyntaxError(f"Line {index+1}, Statements need to end with semicolons (;)")
+        raise SyntaxError(f"Line {index+1}: Statements need to end with semicolons (;)")
 
 # Parsing the read statement
 def parse_read(tokens, index):
     next_token = next(tokens)
     if next_token[0] != 'LPAREN':
-        raise SyntaxError(f"Line {index+1}, Expected '(' after keyword 'read'")
+        raise SyntaxError(f"Line {index+1}: Expected '(' after keyword 'read'")
 
     identifier = next(tokens)
     if identifier[0] != 'ID':
         raise SyntaxError(f"Line {index+1}, Expected an identifier")
     if symbol_table.get(identifier[1]) is None:
-        raise SyntaxError(f"Line {index+1}, Variable '{identifier[1]}' is not declared")
+        raise SyntaxError(f"Line {index+1}: Variable '{identifier[1]}' is not declared")
 
     declared_type = symbol_table.get(identifier[1])
     if declared_type is None:
-        raise SyntaxError(f"Line {index+1}, Variable '{identifier[1]}' is not declared")
+        raise SyntaxError(f"Line {index+1}: Variable '{identifier[1]}' is not declared")
 
     next_token = next(tokens)
     if next_token[0] != 'RPAREN':
-        raise SyntaxError(f"Line {index+1}, Expected ')' to end read statement")
+        raise SyntaxError(f"Line {index+1}: Expected ')' to end read statement")
         
     next_token = next(tokens)
     if next_token[0] != 'SEMICOLON':
-        raise SyntaxError(f"Line {index+1}, Statements need to end with semicolons (;)")
+        raise SyntaxError(f"Line {index+1}: Statements need to end with semicolons (;)")
 
 def main(filepath):
     code = read_files(filepath)

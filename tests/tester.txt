@@ -2,3 +2,4 @@ int a,b;
 b = 20;
 a = 5;
 print(b);
+read(a);
