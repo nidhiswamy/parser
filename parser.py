@@ -54,9 +54,9 @@ symbol_table = {}
 def parse(tokens):
     try:
         parse_code(tokens)
-        print("Valid input")
+        print("VALID INPUT")
     except Exception as e:
-        print("Invalid input: ", e)
+        print("INVALID,", e)
 
 def parse_code(tokens):
     data_types = ['INT', 'BOOL', 'FLOAT', 'CHAR', 'STRING']
@@ -96,22 +96,34 @@ def parse_datatypes(tokens, curr_token, index):
         # Array handling
         if next_token[0] != 'SEMICOLON' and next_token[0] == 'ARR':
             numbers = [int(num) for num in next_token[1].strip('[]').split('][')]
+            # Setting type and dimension of given array in symbol table
             symbol_table[data_type[1]] = (curr_token[0], numbers)
             data_type = symbol_table.get(next_token[1])
             next_token = next(tokens)
+        # Handling multiple declarations
+        elif next_token[0] == 'COMMA':
+            next_token = next(tokens)
+            if next_token[0] == 'ID':
+                symbol_table[next_token[1]] = (curr_token[0], 0)
+            else:
+                raise SyntaxError(f"Line {index+1}: Invalid multiple declaration attempt")
+            next_token = next(tokens)
     else:
-        raise SyntaxError(f"Line {index+1}, Invalid data type: {data_type[1]}")
+        raise SyntaxError(f"Line {index+1}: Invalid data type - {data_type[1]}")
 
     if data_type is not None:
         symbol_table[next_token[1]] = (data_type[0], 0)
     else:
         symbol_table[next_token[1]] = (data_type, 0)
 
+
+    # Start raising specific syntax error messages
     if next_token[0] == 'ASSIGN':
-        raise SyntaxError(f"Line {index+1}, Declaration and assignment at the same time.")
+        raise SyntaxError(f"Line {index+1}: Declaration and assignment at the same time.")
+
 
     if next_token[0] != 'SEMICOLON':
-        raise SyntaxError(f"Line {index+1}, Declarations need to end with a semicolon (;)")
+        raise SyntaxError(f"Line {index+1}: Declarations need to end with a semicolon (;)")
 
     if data_type is not None:
         symbol_table[next_token[1]] = (data_type[0], 0)
@@ -124,10 +136,10 @@ def parse_assignment(tokens, curr_token, index):
 
     declared_type = symbol_table.get(curr_token[1])
     if declared_type is None:
-        raise SyntaxError(f"Line {index+1}, Variable '{curr_token[1]}' is not declared")
+        raise SyntaxError(f"Line {index+1}: Variable '{curr_token[1]}' is not declared")
 
     if next_token[0] != 'ASSIGN':
-        raise SyntaxError(f"Line {index+1}, Expected '='")
+        raise SyntaxError(f"Line {index+1}: Expected '='")
 
     parse_expression(tokens, curr_token, index)
 
