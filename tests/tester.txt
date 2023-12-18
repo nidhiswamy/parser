@@ -1,4 +1,4 @@
-int a,b;
+int a,b,c;
 b = 20;
 a = 5;
 print(b);
